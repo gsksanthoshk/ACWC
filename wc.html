@@ -1,0 +1,102 @@
+<!-- 🌦 Weather + Calendar Section -->
+<div class="card" style="max-width:600px; margin:auto; text-align:center;">
+  <h3 style="margin-bottom:15px;">🌦 Weather Forecast & 🗓 Calendar</h3>
+
+  <!-- Weather -->
+  <div style="margin-bottom:20px;">
+    <input type="text" id="city" placeholder="Enter city" 
+           style="padding:8px; border:1px solid #ccc; border-radius:6px; width:60%; max-width:250px;">
+    <button onclick="getWeather()" 
+            style="padding:8px 14px; border:none; border-radius:6px; background:#007bff; color:white; margin-left:6px; cursor:pointer;">
+      Check
+    </button>
+    <p id="weather" style="margin-top:12px; font-size:1rem; font-weight:500;"></p>
+  </div>
+
+  <hr style="margin:20px 0;">
+
+  <!-- Calendar -->
+  <div>
+    <h4 id="monthYear" style="margin-bottom:10px; font-size:1.2rem; color:#333;"></h4>
+    <div id="calendarGrid" 
+         style="display:grid; grid-template-columns: repeat(7, 1fr); gap:8px; justify-items:center;">
+    </div>
+  </div>
+</div>
+
+<script>
+/* 🌤 Weather */
+async function getWeather() {
+  const city = document.getElementById("city").value.trim();
+  if (!city) { alert("Enter city name"); return; }
+  try {
+    const res = await fetch(`https://wttr.in/${city}?format=%C+%t`);
+    const txt = await res.text();
+    document.getElementById("weather").innerText = "📍 " + city + " → " + txt;
+  } catch {
+    document.getElementById("weather").innerText = "❌ Error fetching weather";
+  }
+}
+
+/* 🗓 Calendar (clean design) */
+function renderCalendar() {
+  const today = new Date();
+  const month = today.getMonth();
+  const year = today.getFullYear();
+  const monthNames = ["January","February","March","April","May","June",
+                      "July","August","September","October","November","December"];
+  
+  document.getElementById("monthYear").innerText = `${monthNames[month]} ${year}`;
+  const calendarGrid = document.getElementById("calendarGrid");
+  calendarGrid.innerHTML = "";
+
+  // Days of week header
+  const daysOfWeek = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  daysOfWeek.forEach(d => {
+    const cell = document.createElement("div");
+    cell.innerHTML = `<b>${d}</b>`;
+    cell.style.color = "#007bff";
+    cell.style.fontSize = "0.9rem";
+    calendarGrid.appendChild(cell);
+  });
+
+  // First day of month
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  // Empty slots before month starts
+  for (let i=0; i<firstDay; i++) {
+    const emptyCell = document.createElement("div");
+    calendarGrid.appendChild(emptyCell);
+  }
+
+  // Days of month
+  for (let d=1; d<=daysInMonth; d++) {
+    const cell = document.createElement("div");
+    cell.textContent = d;
+    cell.style.width = "40px";
+    cell.style.height = "40px";
+    cell.style.display = "flex";
+    cell.style.alignItems = "center";
+    cell.style.justifyContent = "center";
+    cell.style.borderRadius = "50%";
+    cell.style.cursor = "default";
+
+    // Highlight today
+    if (d === today.getDate()) {
+      cell.style.background = "#007bff";
+      cell.style.color = "white";
+      cell.style.fontWeight = "bold";
+      cell.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+    } else {
+      cell.style.background = "#f8f9fa";
+      cell.style.color = "#333";
+    }
+
+    calendarGrid.appendChild(cell);
+  }
+}
+
+// Load calendar when page opens
+window.addEventListener("load", renderCalendar);
+</script>
